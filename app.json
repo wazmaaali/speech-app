@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "MyApp",
+    "slug": "MyCoolApp",
+    "privacy": "public",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "version": "1.0.6",
+    "orientation": "portrait",
+    "icon": "./assets/logo.png",
+    "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "buildNumber": "4",
+      "bundleIdentifier": "TODObundleIdentifier",
+      "config": {
+        "googleSignIn": {
+          "reservedClientId": "TODOreservedClientId"
+        }
+      },
+      "infoPlist":{
+       "NSMicrophoneUsageDescription": "The microphone will be used to record your speech samples for research purposes.",
+       "UIRequiresFullScreen":true
+      }
+    },
+    "android": {
+      "package": "com.speechrecognition.slu",
+      "permissions": [
+        "RECORD_AUDIO"
+      ],
+      "googleServicesFile": "/Users/saira/Downloads/google-services.json"
+    },
+    "description": ""
+  }
+}
