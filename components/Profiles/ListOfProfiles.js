@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,13 +8,17 @@ import {
   Button,
   TouchableOpacity,
 } from "react-native";
-// import GetTopNavigation from "../style/TopNavigation";
+import GetTopNavigation from "../style/TopNavigation";
 // import { GetHeaderOnly } from "../style/TopNavigation";
+import * as firebase from "firebase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 class ListOfProfiles extends React.Component {
   constructor(props) {
     super(props);
+
     console.log("999 Im in list of profiles");
+
     this.state = {
       data: [
         {
@@ -82,12 +86,19 @@ class ListOfProfiles extends React.Component {
           photo: "https://randomuser.me/api/portraits/women/26.jpg",
         },
       ],
+      users: [],
+      loaded: false,
+
+      fetchData: firebase.firestore().collection("children_profiles"),
     };
   }
 
   render() {
+    if (!this.state.loaded) return <View />;
+    console.log("usersss; ", this.state.users);
     return (
       <View style={styles.container}>
+        <TouchableOpacity onPress={() => logout(navigation)}></TouchableOpacity>
         <Button
           onPress={() => {
             this.addNewProfile();
@@ -98,7 +109,7 @@ class ListOfProfiles extends React.Component {
         />
         <FlatList
           style={{ flex: 1 }}
-          data={this.state.data}
+          data={this.state.users}
           renderItem={({ item }) => <Item item={item} />}
           keyExtractor={(item) => item.email}
         />
@@ -107,18 +118,43 @@ class ListOfProfiles extends React.Component {
   }
 
   addNewProfile = () => {
-    console.log("99999 New Profile", this.props);
-    this.props.navigation.navigate("CreateAProfile");
+    console.log("99999 New Profile");
+    this.props.navigation.navigate("CreateAProfile", {
+      appUser: this.props.navigation.state.params.appUser,
+    });
+    // this.props.navigation.navigate("CreateAProfile");
   };
-  // static navigationOptions = ({ navigation }) => {
-  //   headerLeft: null;
-  //   // return GetTopNavigation(navigation);
-  // };
-  // this.props.navigation.navigationOptions = {
-  //   headerLeft: () => {
-  //     return null;
-  //   },
-  // };
+  componentDidMount() {
+    this.state.fetchData.onSnapshot((querySnapshot) => {
+      console.log("  user;: ");
+      const user = [];
+      querySnapshot.forEach((doc) => {
+        const { firstName, lastName, gender } = doc.data();
+        user.push({
+          id: doc.id,
+          firstName,
+          lastName,
+          gender,
+        });
+      });
+      this.setState({
+        users: user,
+        loaded: true,
+      });
+    });
+
+    console.log("999 this: ", this.state.users);
+  }
+  //   getData() {
+  //     try {
+  //       const jsonValue = AsyncStorage.getItem("@children_profiles");
+  //       console.log("999: ", jsonValue);
+  //       return jsonValue != null ? JSON.parse(jsonValue) : null;
+  //     } catch (e) {
+  //       console.log(e);
+  //       console.log("There was an error");
+  //     }
+  //   }
 }
 
 const styles = StyleSheet.create({
@@ -143,12 +179,15 @@ function Item({ item }) {
   return (
     <View style={styles.listItem}>
       <Image
-        source={{ uri: item.photo }}
+        source={require("../../assets/profile.png")}
         style={{ width: 60, height: 60, borderRadius: 30 }}
       />
       <View style={{ alignItems: "center", flex: 1 }}>
-        <Text style={{ fontWeight: "bold" }}>{item.name}</Text>
-        <Text>{item.position}</Text>
+        <Text style={{ fontWeight: "bold" }}>
+          {item.firstName}
+          {item.lastName}
+        </Text>
+        <Text>{item.gender}</Text>
       </View>
       <TouchableOpacity
         style={{

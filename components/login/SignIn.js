@@ -8,6 +8,7 @@ import {
   Text,
   TouchableOpacity,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Input } from "react-native-elements";
 import * as firebase from "firebase";
@@ -31,6 +32,8 @@ class SignIn extends Component {
       emailErrorMessage: "",
       passwordErrorMessage: "",
       currUser: null,
+      users: [],
+      fetchData: firebase.firestore().collection("children_profiles"),
     };
     console.log("99999 in Sign In params:", this.props);
   }
@@ -50,24 +53,55 @@ class SignIn extends Component {
       .auth()
       .signInWithEmailAndPassword(email, password)
       .then(() => {
-        console.log("99999 Im here");
-        // this.props.navigation.navigate("Create Profile");
-        this.props.navigation.navigate("ListOfProfiles");
+        this.state.fetchData.onSnapshot((querySnapshot) => {
+          console.log("  user;: ");
+          const user = [];
+          querySnapshot.forEach((doc) => {
+            const { firstName, lastName, gender } = doc.data();
+            user.push({
+              id: doc.id,
+              firstName,
+              lastName,
+              gender,
+            });
+          });
+          this.state.users = user;
+          // this.storeData(this.state.users);
+        });
+
+        this.props.navigation.navigate("ListOfProfiles", {
+          email: email,
+          // appUser: this.props.navigation.state.params.appUser,
+        });
       })
       .catch((error) => {
-        if (error.code.includes("email")) {
-          this.setState({
-            emailErrorMessage: error.message,
-            passwordErrorMessage: "",
-          });
-        } else {
-          this.setState({
-            passwordErrorMessage: error.message,
-            emailErrorMessage: "",
-          });
-        }
+        /////**** Fix this later
+        this.setState({ errorMessage: error.message });
+        console.log("errorMessage: error.message: ", error.message);
+
+        // if (error.code.includes("email")) {
+        //   this.setState({
+        //     emailErrorMessage: error.message,
+        //     passwordErrorMessage: "",
+        //   });
+        // }
+        // else {
+        //   this.setState({
+        //     passwordErrorMessage: error.message,
+        //     emailErrorMessage: "",
+        //   });
+        // }
       });
   };
+
+  // storeData = async (value) => {
+  //   try {
+  //     await AsyncStorage.setItem("@children_profiles", JSON.stringify(value));
+  //   } catch (e) {
+  //     console.log("error: ", error);
+  //     // saving error
+  //   }
+  // };
 
   setup = () => {
     this.props.navigation.navigate("Sign Up");

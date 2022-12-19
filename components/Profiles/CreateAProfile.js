@@ -10,14 +10,9 @@ import {
   TouchableWithoutFeedback,
   Linking,
 } from "react-native";
+import { useState } from "react";
 import { Input } from "react-native-elements";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
-import { GetHeaderOnly } from "../style/TopNavigation";
-
-import { Button, Card, Icon } from "react-native-elements";
-
-import GetTopNavigation from "../style/TopNavigation";
 import styles from "../style/Style.js";
 import LabelledIcon from "../style/LabelledIcon";
 import { myColors } from "../style/colors";
@@ -25,6 +20,8 @@ import { myColors } from "../style/colors";
 import * as firebase from "firebase";
 
 export default class CreateAProfile extends React.Component {
+  // var toDoRef = "";
+  // var [addData, setAddData] = "";
   constructor(props) {
     super(props);
     console.log("999 Im in CreateAProfile");
@@ -34,6 +31,7 @@ export default class CreateAProfile extends React.Component {
       isPatient: false,
       firstName: "",
       lastName: "",
+      childId: "",
 
       dateOfBirth: new Date(),
       today: new Date(),
@@ -42,6 +40,10 @@ export default class CreateAProfile extends React.Component {
       isSexSelected: false,
       isMale: false,
       isFemale: false,
+
+      toDoRef: firebase.firestore().collection("children_profiles"),
+      addData: "",
+      setAddData: "",
     };
     console.log("23 99999", this.props);
   }
@@ -102,10 +104,6 @@ export default class CreateAProfile extends React.Component {
     }
     return nameStyle;
   };
-
-  // static navigationOptions = ({ navigation }) => {
-  //   return GetTopNavigation(navigation);
-  // };
 
   render() {
     return (
@@ -231,42 +229,96 @@ export default class CreateAProfile extends React.Component {
   }
 
   submit = () => {
-    this.props.navigation.navigate("Info", {
-      //appUser: this.props.navigation.state.params.appUser,
-      messageTitle: "Profile Created",
-      message:
-        "Thank you for creating your profile data. It will help improve the accuracy of our software.",
-    });
-    var userId = firebase.auth().currentUser.uid;
+    if (
+      firebase.auth().currentUser.uid.length > 0 &&
+      this.state.firstName &&
+      this.state.firstName.length > 0 &&
+      this.state.lastName &&
+      this.state.lastName.length > 0 &&
+      this.state.dateOfBirth &&
+      this.state.isSexSelected == true
+    ) {
+      var gen = "";
+      if (this.state.isSexSelected) {
+        if (this.state.isMale) {
+          gen = "male";
+        } else if (this.state.isFemale) {
+          gen = "female";
+        } else {
+          gen = "Preferred not to answer";
+        }
+      }
+      console.log("99 inside if");
 
-    // var isPatient = this.props.navigation.state.params.isPatient;
-    var firstName = this.props.navigation.state.params.firstName;
-    var lastName = this.props.navigation.state.params.lastName;
-    var dateOfBirth = this.props.navigation.state.params.dateOfBirth;
-    var email = "wazma@slu.edu"; //this.props.navigation.state.params.appUser;
+      const data = {
+        id: 1,
+        firstName: this.state.firstName,
+        lastName: this.state.lastName,
+        dateOfBirth: this.state.dateOfBirth,
+        gender: gen,
+        currUser: firebase.auth().currentUser.uid,
+      };
 
-    firebase
-      .database()
-      .ref("profiles/" + userId + "/")
-      .set({
-        dateOfBirth,
-        isPatient,
-        email,
-        firstName,
-        lastName,
-        userId,
-      })
-      .then((data) => {
-        console.log("data ", data);
-        this.props.navigation.navigate("Info", {
-          appUser: this.props.navigation.state.params.appUser,
-          messageTitle: "Profile Created",
-          message:
-            "Thank you for creating your profile data. It will help improve the accuracy of our software.",
+      this.state.toDoRef
+        .add(data)
+        .then(() => {
+          this.props.navigation.navigate("Info", {
+            // appUser: this.props.navigation.state.params.appUser,
+            messageTitle: "Profile Created",
+            message:
+              "Thank you for creating your profile data. It will help improve the accuracy of our software.",
+          });
+        })
+        .catch((error) => {
+          alert(error);
+          console.log("999: ", error);
         });
-      })
-      .catch((error) => {
-        console.log("error ", error);
-      });
+    }
+    //   this.props.navigation.navigate("Info", {
+    //     // appUser: this.props.navigation.state.params.appUser,
+    //     messageTitle: "Profile Created",
+    //     message:
+    //       "Thank you for creating your profile data. It will help improve the accuracy of our software.",
+    //   });
+    //   var userId = firebase.auth().currentUser.uid;
+
+    //   //if(childId not exist){
+    //   //childId==1
+    //   // }
+    //   //  else{
+    //   //      get the last added child id and increment 1
+    //   //  }
+
+    //   console.log("9999: userID: ", userId);
+    //   var isPatient = true; //this.props.navigation.state.params.isPatient;
+    //   var firstName = "abc"; //this.props.navigation.state.params.firstName;
+    //   var lastName = "def"; //this.props.navigation.state.params.lastName;
+    //   var dateOfBirth = "123"; //this.props.navigation.state.params.dateOfBirth;
+    //   var email = "wazma.ali@slu.edu"; //this.props.navigation.state.params.appUser;
+
+    //   //create a child id and increment it by 1 by comparing it with the last id from teh db list
+    //   firebase
+    //     .database()
+    //     .ref("profiles/" + userId + "/")
+    //     .set({
+    //       dateOfBirth,
+    //       isPatient,
+    //       email,
+    //       firstName,
+    //       lastName,
+    //       userId,
+    //     })
+    //     .then((data) => {
+    //       console.log("data ", data);
+    //       this.props.navigation.navigate("Info", {
+    //         appUser: this.props.navigation.state.params.appUser,
+    //         messageTitle: "Profile Created",
+    //         message:
+    //           "Thank you for creating your profile data. It will help improve the accuracy of our software.",
+    //       });
+    //     })
+    //     .catch((error) => {
+    //       console.log("error ", error);
+    //     });
   };
 }
