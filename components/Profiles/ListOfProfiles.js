@@ -91,11 +91,12 @@ class ListOfProfiles extends React.Component {
 
       fetchData: firebase.firestore().collection("children_profiles"),
     };
+    this.goToProfile = this.goToProfile.bind(this);
   }
 
   render() {
     if (!this.state.loaded) return <View />;
-    console.log("usersss; ", this.state.users);
+
     return (
       <View style={styles.container}>
         <TouchableOpacity onPress={() => logout(navigation)}></TouchableOpacity>
@@ -104,13 +105,13 @@ class ListOfProfiles extends React.Component {
             this.addNewProfile();
           }}
           title="Add New Profile +"
-          backgroundColor="#edeab9"
-          color="#827c05"
+          backgroundColor="#00BFFF"
+          color="#006aff"
         />
         <FlatList
           style={{ flex: 1 }}
           data={this.state.users}
-          renderItem={({ item }) => <Item item={item} />}
+          renderItem={({ item }) => <this.Item item={item} />}
           keyExtractor={(item) => item.email}
         />
       </View>
@@ -122,19 +123,20 @@ class ListOfProfiles extends React.Component {
     this.props.navigation.navigate("CreateAProfile", {
       appUser: this.props.navigation.state.params.appUser,
     });
-    // this.props.navigation.navigate("CreateAProfile");
   };
   componentDidMount() {
     this.state.fetchData.onSnapshot((querySnapshot) => {
-      console.log("  user;: ");
       const user = [];
       querySnapshot.forEach((doc) => {
-        const { firstName, lastName, gender } = doc.data();
+        console.log("  user;: ", doc.data());
+
+        const { firstName, lastName, gender, dateOfBirth } = doc.data();
         user.push({
           id: doc.id,
           firstName,
           lastName,
           gender,
+          dateOfBirth,
         });
       });
       this.setState({
@@ -142,9 +144,10 @@ class ListOfProfiles extends React.Component {
         loaded: true,
       });
     });
-
-    console.log("999 this: ", this.state.users);
   }
+  static navigationOptions = ({ navigation }) => {
+    return GetTopNavigation(navigation);
+  };
   //   getData() {
   //     try {
   //       const jsonValue = AsyncStorage.getItem("@children_profiles");
@@ -155,6 +158,85 @@ class ListOfProfiles extends React.Component {
   //       console.log("There was an error");
   //     }
   //   }
+
+  Item = ({ item }) => {
+    return (
+      <View style={styles.listItem}>
+        <Image
+          source={require("../../assets/profile.png")}
+          style={{ width: 60, height: 60, borderRadius: 30 }}
+        />
+        <View style={{ alignItems: "center", flex: 1 }}>
+          <Text style={{ fontWeight: "bold" }}>
+            {item.firstName} {item.lastName}
+          </Text>
+          <Text>{item.gender}</Text>
+        </View>
+        <TouchableOpacity
+          style={{
+            height: 50,
+            width: 50,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => {
+              this.goToProfile(item);
+            }}
+          >
+            <Image source={require("../../assets/edit.png")} />
+          </TouchableOpacity>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            height: 50,
+            width: 50,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => {
+              this.deleteAd(item);
+            }}
+          >
+            <Image
+              source={require("../../assets/delete.png")}
+              style={{
+                height: 40,
+                width: 40,
+              }}
+            />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  goToProfile = (aa) => {
+    this.props.navigation.navigate("Profile", {
+      appUser: this.props.navigation.state.params.appUser,
+      child: aa,
+    });
+    // this.props.navigation.navigate("CreateAProfile");
+  };
+
+  deleteAd = (ss) => {
+    firebase
+      .firestore()
+      .collection("/children_profiles/")
+      .doc(ss.id)
+      .delete()
+      .then(() => {
+        console.log("Doc deleted");
+      })
+      .catch((error) => {
+        console.error("Error removing document: ", error);
+      });
+  };
 }
 
 const styles = StyleSheet.create({
@@ -175,44 +257,4 @@ const styles = StyleSheet.create({
   },
 });
 
-function Item({ item }) {
-  return (
-    <View style={styles.listItem}>
-      <Image
-        source={require("../../assets/profile.png")}
-        style={{ width: 60, height: 60, borderRadius: 30 }}
-      />
-      <View style={{ alignItems: "center", flex: 1 }}>
-        <Text style={{ fontWeight: "bold" }}>
-          {item.firstName}
-          {item.lastName}
-        </Text>
-        <Text>{item.gender}</Text>
-      </View>
-      <TouchableOpacity
-        style={{
-          height: 50,
-          width: 50,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Image source={require("../../assets/edit.png")} />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={{
-          height: 50,
-          width: 50,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Image
-          source={require("../../assets/delete.png")}
-          style={{ width: 30, height: 30 }}
-        />
-      </TouchableOpacity>
-    </View>
-  );
-}
 export default ListOfProfiles;

@@ -1,7 +1,7 @@
 export const myColors = {
-  third: "#edeab9",
+  third: "#00BFFF",
   primary: "#0972db",
   secondary_old: "#FFFF",
-  secondary: "#827c05",
+  secondary: "#006aff",
   fourth: "#FFFF",
 };

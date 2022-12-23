@@ -1,68 +1,79 @@
 import React, { Component } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity, Linking } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
 import { Button, Card, Icon } from "react-native-elements";
 
 import * as Permissions from "expo-permissions";
 
-import GetTopNavigation from "../style/TopNavigation";
-import styles from "../style/Style.js"
+import GetHeaderOnly from "../style/TopNavigation";
+import styles from "../style/Style.js";
 import LabelledIcon from "../style/LabelledIcon";
-import {myColors} from "../style/colors";
+import { myColors } from "../style/colors";
 
 class ReadyToStart extends Component {
-
   constructor(props) {
-    super(props)
+    super(props);
   }
 
   start = async () => {
-       this.props.navigation.navigate("CardNavigation", {
-          appUser: this.props.navigation.state.params.appUser}
-       );
-     }
-
-  static navigationOptions = ({navigation}) =>{
-    return GetTopNavigation(navigation);
+    this.props.navigation.navigate("CardNavigation", {
+      appUser: this.props.navigation.state.params.appUser,
+    });
   };
 
+  static navigationOptions = ({ navigation }) => {
+    return GetHeaderOnly(navigation);
+  };
   render() {
     return (
       <View flex style={styles.imageContainer}>
-
-         <View style={{paddingTop:10, paddingBottom:10, justifyContent:'space-around',  backgroundColor:myColors.third, width:'90%', borderRadius:10, alignSelf:'center'}}>
-
+        <View
+          style={{
+            paddingTop: 10,
+            paddingBottom: 10,
+            justifyContent: "space-around",
+            backgroundColor: myColors.third,
+            width: "90%",
+            borderRadius: 10,
+            alignSelf: "center",
+          }}
+        >
           <View>
-             {/* Title */}
-             <Text style={styles.title}>Recording Instructions</Text>
+            {/* Title */}
+            <Text style={styles.title}>Recording Instructions</Text>
 
+            {/* Instructions */}
 
-             {/* Instructions */}
+            <Text style={styles.instructions}>
+              Listen to the prompts and record your speech samples. Your
+              recordings will be used for research purposes.
+            </Text>
 
-               <Text style={styles.instructions}>
-                  Listen to the prompts and record your speech samples. Your recordings will be used for research purposes.
-               </Text>
+            <Text style={styles.instructions}>Ready To Start?</Text>
 
-               <Text style={styles.instructions}>
-                  Ready To Start?
-               </Text>
- 
-             {/* Actions */}
+            {/* Actions */}
 
-
-               <TouchableOpacity 
-                  onPress={() => {this.start()}}
-                >
-               <LabelledIcon
-                    name="play-outline"
-                    type="ionicon"
-                    color={myColors.third}
-                    label="Start"
-                    style={styles.actionButton}/>
-
-               </TouchableOpacity>
-             </View>
-
-      </View>
+            <TouchableOpacity
+              onPress={() => {
+                this.start();
+              }}
+            >
+              <LabelledIcon
+                name="play-outline"
+                type="ionicon"
+                color={myColors.third}
+                label="Start"
+                style={styles.actionButton}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     );
   }

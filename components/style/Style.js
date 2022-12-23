@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   unselectedBox: {
-    backgroundColor: "#a3a179",
+    backgroundColor: "#00BFFF",
     borderColor: myColors.secondary,
     borderWidth: 1,
     borderRadius: 10,

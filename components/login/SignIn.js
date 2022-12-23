@@ -175,7 +175,7 @@ class SignIn extends Component {
               <LabelledIcon
                 name="log-in-outline"
                 type="ionicon"
-                color="#c2ba25"
+                color="#00BFFF"
                 label="Sign in"
                 alignSelf="center"
                 style={styles.actionButton}

@@ -133,7 +133,7 @@ export default class CreateAProfile extends React.Component {
 
               <DateTimePicker
                 style={{
-                  backgroundColor: "#edeab9",
+                  backgroundColor: "#88c8e3",
                   borderColor: myColors.secondary,
                   borderWidth: 0.5,
                   color: myColors.third,
@@ -219,7 +219,7 @@ export default class CreateAProfile extends React.Component {
           <LabelledIcon
             name="create-outline"
             type="ionicon"
-            color="#edeab9"
+            color="#00BFFF"
             label="Create Profile"
             style={styles.actionButton}
           />
@@ -248,7 +248,7 @@ export default class CreateAProfile extends React.Component {
           gen = "Preferred not to answer";
         }
       }
-      console.log("99 inside if");
+      console.log("99 inside if", this.state.dateOfBirth);
 
       const data = {
         id: 1,

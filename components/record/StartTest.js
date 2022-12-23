@@ -11,7 +11,7 @@ import { Button, Card, Icon } from "react-native-elements";
 
 import * as Permissions from "expo-permissions";
 
-//import GetTopNavigation from "../style/TopNavigation";
+import GetHeaderOnly from "../style/TopNavigation";
 import styles from "../style/Style.js";
 import LabelledIcon from "../style/LabelledIcon";
 import { myColors } from "../style/colors";
@@ -46,9 +46,9 @@ class TestCompleted extends Component {
     return microphonePermissionStatus.permissions.audioRecording.granted;
   }
 
-  // static navigationOptions = ({ navigation }) => {
-  //   return GetTopNavigation(navigation);
-  // };
+  static navigationOptions = ({ navigation }) => {
+    return GetHeaderOnly(navigation);
+  };
 
   render() {
     return (
@@ -58,7 +58,7 @@ class TestCompleted extends Component {
             paddingTop: 10,
             paddingBottom: 10,
             justifyContent: "space-around",
-            backgroundColor: myColors.third,
+            backgroundColor: myColors.secondary_old,
             width: "90%",
             borderRadius: 10,
             alignSelf: "center",
