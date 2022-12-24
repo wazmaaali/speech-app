@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 10,
     marginBottom: 10,
-    backgroundColor: "#827c05",
+    backgroundColor: "#006aff",
     alignSelf: "stretch",
   },
   imageContainer: {

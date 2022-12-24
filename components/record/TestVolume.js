@@ -34,7 +34,7 @@ class TestVolume extends Component {
     this.setState({ done: true });
     //Speech.stop();
     this.testSound.stopAsync();
-    this.props.navigation.navigate("ReadyToStart", {
+    this.props.navigation.navigate("Recording", {
       appUser: this.props.navigation.state.params.appUser,
     });
   };
@@ -48,7 +48,9 @@ class TestVolume extends Component {
     //       this.state.interval = setInterval(()=> {this.playSound()}, 3000);
   }
   async playSound() {
-    this.testSound = await prepSound(require("../../assets/sounds/taunt.wav"));
+    this.testSound = await prepSound(
+      require("../../assets/sounds/testSound.wav")
+    );
     this.testSound.setIsLoopingAsync(true);
 
     if (!this.state.done) {
@@ -76,7 +78,7 @@ class TestVolume extends Component {
             paddingTop: 10,
             paddingBottom: 10,
             justifyContent: "space-around",
-            backgroundColor: myColors.third,
+            backgroundColor: "white",
             width: "90%",
             borderRadius: 10,
             alignSelf: "center",

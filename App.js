@@ -35,9 +35,7 @@ import SignUp from "./components/login/SignUp";
 import ForgotPassword from "./components/login/ForgotPassword";
 
 import StartTest from "./components/record/StartTest";
-import CardNavigation from "./components/record/CardNavigation";
 import TestVolume from "./components/record/TestVolume";
-import ReadyToStart from "./components/record/ReadyToStart";
 
 import Home from "./components/home/Home";
 import Info from "./components/home/Info";
@@ -45,6 +43,7 @@ import Info from "./components/home/Info";
 import Profile from "./components/Profiles/Profile";
 import ListOfProfiles from "./components/Profiles/ListOfProfiles";
 import CreateAProfile from "./components/Profiles/CreateAProfile";
+import Recording from "./components/record/Recording";
 
 const RootStack = createStackNavigator(
   {
@@ -63,12 +62,6 @@ const RootStack = createStackNavigator(
     TestVolume: {
       screen: TestVolume,
     },
-    ReadyToStart: {
-      screen: ReadyToStart,
-    },
-    CardNavigation: {
-      screen: CardNavigation,
-    },
     "Sign Up": {
       screen: SignUp,
     },
@@ -86,6 +79,9 @@ const RootStack = createStackNavigator(
     },
     ListOfProfiles: {
       screen: ListOfProfiles,
+    },
+    Recording: {
+      screen: Recording,
     },
   },
   {
