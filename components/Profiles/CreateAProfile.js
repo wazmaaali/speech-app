@@ -251,19 +251,20 @@ export default class CreateAProfile extends React.Component {
       console.log("99 inside if", this.state.dateOfBirth);
 
       const data = {
-        id: 1,
+        _id: 1,
         firstName: this.state.firstName,
         lastName: this.state.lastName,
         dateOfBirth: this.state.dateOfBirth,
         gender: gen,
+        records: [],
+        audioR: "",
         currUser: firebase.auth().currentUser.uid,
       };
 
       this.state.toDoRef
         .add(data)
         .then(() => {
-          this.props.navigation.navigate("Info", {
-            // appUser: this.props.navigation.state.params.appUser,
+          this.props.navigation.navigate("ListOfProfiles", {
             messageTitle: "Profile Created",
             message:
               "Thank you for creating your profile data. It will help improve the accuracy of our software.",
@@ -274,51 +275,5 @@ export default class CreateAProfile extends React.Component {
           console.log("999: ", error);
         });
     }
-    //   this.props.navigation.navigate("Info", {
-    //     // appUser: this.props.navigation.state.params.appUser,
-    //     messageTitle: "Profile Created",
-    //     message:
-    //       "Thank you for creating your profile data. It will help improve the accuracy of our software.",
-    //   });
-    //   var userId = firebase.auth().currentUser.uid;
-
-    //   //if(childId not exist){
-    //   //childId==1
-    //   // }
-    //   //  else{
-    //   //      get the last added child id and increment 1
-    //   //  }
-
-    //   console.log("9999: userID: ", userId);
-    //   var isPatient = true; //this.props.navigation.state.params.isPatient;
-    //   var firstName = "abc"; //this.props.navigation.state.params.firstName;
-    //   var lastName = "def"; //this.props.navigation.state.params.lastName;
-    //   var dateOfBirth = "123"; //this.props.navigation.state.params.dateOfBirth;
-    //   var email = "wazma.ali@slu.edu"; //this.props.navigation.state.params.appUser;
-
-    //   //create a child id and increment it by 1 by comparing it with the last id from teh db list
-    //   firebase
-    //     .database()
-    //     .ref("profiles/" + userId + "/")
-    //     .set({
-    //       dateOfBirth,
-    //       isPatient,
-    //       email,
-    //       firstName,
-    //       lastName,
-    //       userId,
-    //     })
-    //     .then((data) => {
-    //       console.log("data ", data);
-    //       this.props.navigation.navigate("Info", {
-    //         appUser: this.props.navigation.state.params.appUser,
-    //         messageTitle: "Profile Created",
-    //         message:
-    //           "Thank you for creating your profile data. It will help improve the accuracy of our software.",
-    //       });
-    //     })
-    //     .catch((error) => {
-    //       console.log("error ", error);
-    //     });
   };
 }

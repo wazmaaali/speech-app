@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     fontFamily: "System",
     fontSize: 40,
     fontWeight: "bold",
-    color: "#b4d4c4",
+    color: "#00BFF0",
   },
 
   href: {
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
     alignSelf: "center",
-    backgroundColor: "#b4d4c4",
+    backgroundColor: "#00BFF0",
   },
   actionButtonRed: {
     width: "90%",
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
     alignSelf: "center",
-    backgroundColor: "#edeab9",
+    backgroundColor: "#00BFFF",
   },
   loading: {
     flex: 1,

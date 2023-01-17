@@ -17,8 +17,13 @@ class Info extends Component {
   };
 
   goHome = () => {
+    console.log(
+      "999999999 Info: ",
+      this.props.navigation.state.params.childData.id
+    );
     this.props.navigation.navigate("Home", {
       appUser: this.props.navigation.state.params.appUser,
+      childData: this.props.navigation.state.params.childData,
     });
   };
 

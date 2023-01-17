@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import styles from "../style/Style.js";
 import { myColors } from "../style/colors";
+import LabelledIcon from "../style/LabelledIcon";
 
 // const toDoRef = "";
 // const [addData, setAddData] = "";
@@ -22,7 +23,7 @@ export default class Profile extends React.Component {
     //Work on dob lATER
     console.log(
       "999 Im in CreateAProfile: ",
-      this.props.navigation.state.params.child.dateOfBirth
+      this.props.navigation.state.params.child
     );
     this.state = {
       name: childData.firstName + " " + childData.lastName,
@@ -33,34 +34,48 @@ export default class Profile extends React.Component {
 
   render() {
     return (
-      <View style={styless.container}>
+      <View>
         <View style={styless.header}></View>
         <Image
           style={styless.avatar}
           source={{ uri: "https://bootdey.com/img/Content/avatar/avatar6.png" }}
         />
+
         <View style={styless.body}>
           <View style={styless.bodyContent}>
             <Text style={styless.nameDesign}>{this.state.name}</Text>
             <Text style={styless.nameDesign}>{this.state.gender}</Text>
             <Text style={styless.nameDesign}>6 years</Text>
-            <TouchableOpacity
-              style={styless.buttonContainer}
-              onPress={() => {
-                this.start();
-              }}
-            >
-              <Text>Start</Text>
-            </TouchableOpacity>
           </View>
+        </View>
+        <View
+          style={{
+            marginTop: 200,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              this.start();
+            }}
+          >
+            <LabelledIcon
+              name="play-outline"
+              type="ionicon"
+              color={myColors.third}
+              label="Start"
+              style={styles.actionButton}
+            />
+          </TouchableOpacity>
         </View>
       </View>
     );
   }
 
   start = () => {
+    console.log("999 Im in childData: ", childData);
     this.props.navigation.navigate("Home", {
       appUser: this.props.navigation.state.params.appUser,
+      childData: childData,
     });
   };
 }
@@ -90,17 +105,17 @@ const styless = StyleSheet.create({
     padding: 30,
   },
   nameDesign: {
-    marginTop: 10,
     height: 45,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    fontSize: 15,
+    fontSize: 20,
+    fontWeight: "bold",
+    textTransform: "uppercase",
     padding: 9,
     textAlign: "center", // <-- the magic
-    color: "white",
+    color: "#006aff",
     width: 250,
-    backgroundColor: "#00BFFF",
   },
   buttonContainer: {
     marginTop: 60,

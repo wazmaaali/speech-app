@@ -44,6 +44,8 @@ import Profile from "./components/Profiles/Profile";
 import ListOfProfiles from "./components/Profiles/ListOfProfiles";
 import CreateAProfile from "./components/Profiles/CreateAProfile";
 import Recording from "./components/record/Recording";
+import History from "./components/record/History";
+import TestThis from "./components/record/TestThis";
 
 const RootStack = createStackNavigator(
   {
@@ -83,12 +85,18 @@ const RootStack = createStackNavigator(
     Recording: {
       screen: Recording,
     },
+    History: {
+      screen: History,
+    },
+    TestThis: {
+      screen: TestThis,
+    },
   },
   {
     initialRouteName: "Loading",
     defaultNavigationOptions: {
       headerStyle: {
-        backgroundColor: "gray",
+        backgroundColor: "#006aff",
       },
       headerBackTitle: "Back",
       gesturesEnabled: false,

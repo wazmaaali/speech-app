@@ -28,6 +28,10 @@ class TestVolume extends Component {
       soundCounter: 0,
     };
     testSound: null;
+    console.log(
+      "999 Im in TestVolume: ",
+      this.props.navigation.state.params.childData
+    );
   }
 
   setDone = () => {
@@ -36,6 +40,7 @@ class TestVolume extends Component {
     this.testSound.stopAsync();
     this.props.navigation.navigate("Recording", {
       appUser: this.props.navigation.state.params.appUser,
+      childData: this.props.navigation.state.params.childData,
     });
   };
 
@@ -90,7 +95,7 @@ class TestVolume extends Component {
 
             {/* Instructions */}
             <Text style={styles.instructions}>
-              Adjust your device volume to clearly hear 1, 2, 3.
+              Adjust your device volume to clearly hear the recording.
             </Text>
 
             {/* Actions */}

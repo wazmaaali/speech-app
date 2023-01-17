@@ -22,6 +22,10 @@ class TestCompleted extends Component {
     this.state = {
       noMicAccess: false,
     };
+    console.log(
+      "999 Im in start: ",
+      this.props.navigation.state.params.childData
+    );
   }
 
   start = async () => {
@@ -29,6 +33,7 @@ class TestCompleted extends Component {
     if (status) {
       this.props.navigation.navigate("TestVolume", {
         appUser: this.props.navigation.state.params.appUser,
+        childData: this.props.navigation.state.params.childData,
       });
     } else {
       this.setState({ noMicAccess: true });
