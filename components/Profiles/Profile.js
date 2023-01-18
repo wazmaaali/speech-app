@@ -12,26 +12,41 @@ import {
 import styles from "../style/Style.js";
 import { myColors } from "../style/colors";
 import LabelledIcon from "../style/LabelledIcon";
+import moment from "moment";
 
-// const toDoRef = "";
-// const [addData, setAddData] = "";
 export default class Profile extends React.Component {
   constructor(props) {
     super(props);
 
     childData = this.props.navigation.state.params.child;
-    //Work on dob lATER
-    console.log(
-      "999 Im in CreateAProfile: ",
-      this.props.navigation.state.params.child
+    var a = new Date(
+      childData.dateOfBirth.seconds * 1000 +
+        childData.dateOfBirth.nanoseconds / 1000000
     );
+    var formattedDate = moment(a).utc().format("MM/DD/YYYY");
+    var aa = this.calculate_age(formattedDate);
     this.state = {
       name: childData.firstName + " " + childData.lastName,
-      age: "",
+      age: aa,
       gender: childData.gender,
     };
   }
+  calculate_age = (dob1) => {
+    var dob = new Date(dob1);
+    //calculate month difference from current date in time
+    var month_diff = Date.now() - dob.getTime();
 
+    //convert the calculated difference in date format
+    var age_dt = new Date(month_diff);
+
+    //extract year from date
+    var year = age_dt.getUTCFullYear();
+
+    //now calculate the age of the user
+    var age = Math.abs(year - 1969);
+    console.log(age);
+    return age;
+  };
   render() {
     return (
       <View>
@@ -45,7 +60,7 @@ export default class Profile extends React.Component {
           <View style={styless.bodyContent}>
             <Text style={styless.nameDesign}>{this.state.name}</Text>
             <Text style={styless.nameDesign}>{this.state.gender}</Text>
-            <Text style={styless.nameDesign}>6 years</Text>
+            <Text style={styless.nameDesign}>{this.state.age} years</Text>
           </View>
         </View>
         <View
@@ -72,7 +87,6 @@ export default class Profile extends React.Component {
   }
 
   start = () => {
-    console.log("999 Im in childData: ", childData);
     this.props.navigation.navigate("Home", {
       appUser: this.props.navigation.state.params.appUser,
       childData: childData,
