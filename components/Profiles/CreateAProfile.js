@@ -251,13 +251,10 @@ export default class CreateAProfile extends React.Component {
       console.log("99 inside if", this.state.dateOfBirth);
 
       const data = {
-        _id: 1,
         firstName: this.state.firstName,
         lastName: this.state.lastName,
         dateOfBirth: this.state.dateOfBirth,
         gender: gen,
-        records: [],
-        audioR: "",
         currUser: firebase.auth().currentUser.uid,
       };
 

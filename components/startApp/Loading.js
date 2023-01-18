@@ -32,14 +32,14 @@ export default class Loading extends Component {
             });
           } else {
             console.log("could not find user data");
-            this.props.navigation.navigate("Create Profile", {
+            this.props.navigation.navigate("Sign Up", {
               appUser: user.email.toLowerCase(),
             });
           }
         })
         .catch((error) => {
           console.log("could not find user data");
-          this.props.navigation.navigate("Create Profile", {
+          this.props.navigation.navigate("Sign Up", {
             appUser: user.email.toLowerCase(),
           });
         });
@@ -49,11 +49,13 @@ export default class Loading extends Component {
   };
 
   render() {
+    console.log("loading");
+
     return (
       <View style={styles.loading}>
         <Image
           source={require("../../assets/logo.png")}
-          style={{ width: "100%", height: "50%" }}
+          style={{ width: "100%", height: "60%" }}
         />
       </View>
     );

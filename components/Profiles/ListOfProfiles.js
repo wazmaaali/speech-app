@@ -16,9 +16,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 class ListOfProfiles extends React.Component {
   constructor(props) {
     super(props);
-
-    console.log("999 Im in list of profiles");
-
     this.state = {
       users: [],
       loaded: false,
@@ -53,25 +50,26 @@ class ListOfProfiles extends React.Component {
   }
 
   addNewProfile = () => {
-    console.log("99999 New Profile");
     this.props.navigation.navigate("CreateAProfile", {
       appUser: this.props.navigation.state.params.appUser,
     });
   };
   componentDidMount() {
+    var a = firebase.auth().currentUser.uid;
     this.state.fetchData.onSnapshot((querySnapshot) => {
       const user = [];
       querySnapshot.forEach((doc) => {
-        console.log("  user;: ", doc.data());
-
-        const { firstName, lastName, gender, dateOfBirth } = doc.data();
-        user.push({
-          id: doc.id,
-          firstName,
-          lastName,
-          gender,
-          dateOfBirth,
-        });
+        const { firstName, lastName, gender, dateOfBirth, currUser } =
+          doc.data();
+        if (a === currUser) {
+          user.push({
+            id: doc.id,
+            firstName,
+            lastName,
+            gender,
+            dateOfBirth,
+          });
+        }
       });
       this.setState({
         users: user,
@@ -156,7 +154,6 @@ class ListOfProfiles extends React.Component {
       appUser: this.props.navigation.state.params.appUser,
       child: aa,
     });
-    // this.props.navigation.navigate("CreateAProfile");
   };
 
   deleteAd = (ss) => {
@@ -166,7 +163,7 @@ class ListOfProfiles extends React.Component {
       .doc(ss.id)
       .delete()
       .then(() => {
-        console.log("Doc deleted");
+        console.log("child data deleted");
       })
       .catch((error) => {
         console.error("Error removing document: ", error);
