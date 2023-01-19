@@ -44,8 +44,7 @@ import Profile from "./components/Profiles/Profile";
 import ListOfProfiles from "./components/Profiles/ListOfProfiles";
 import CreateAProfile from "./components/Profiles/CreateAProfile";
 import Recording from "./components/record/Recording";
-import History from "./components/record/History";
-import TestThis from "./components/record/TestThis";
+import History from "./components/record/TestThis";
 
 const RootStack = createStackNavigator(
   {
@@ -88,9 +87,9 @@ const RootStack = createStackNavigator(
     History: {
       screen: History,
     },
-    TestThis: {
-      screen: TestThis,
-    },
+    // TestThis: {
+    //   screen: TestThis,
+    // },
   },
   {
     initialRouteName: "Loading",

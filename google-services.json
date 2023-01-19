@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "900205769137",
+    "project_id": "speech-recognition-33a7f",
+    "storage_bucket": "speech-recognition-33a7f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900205769137:android:dfc382300d292598ee4d90",
+        "android_client_info": {
+          "package_name": "com.speechrecognition.slu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "900205769137-e7v5aoq8vhek883ur0jmt9fsh18upha6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBui24J5sHeSOPrAbauV3jwnCV6IpSuJUk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "900205769137-e7v5aoq8vhek883ur0jmt9fsh18upha6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

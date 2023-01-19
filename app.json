@@ -42,7 +42,7 @@
       "permissions": [
         "RECORD_AUDIO"
       ],
-      "googleServicesFile": "/Users/saira/Downloads/google-services.json"
+      "googleServicesFile": "./google-services.json"
     },
     "description": ""
   }
