@@ -331,28 +331,6 @@ class History extends React.Component {
       console.log("error:", error);
     }
   }
-  onStartPress = async (e) => {
-    this.state.uri = await firebase
-      .storage()
-      .ref(this.state.childDataId)
-      .getDownloadURL();
-    // this.downloadAudio();
-    this.state.isAlreadyPlay = true;
-    this.state.inprogress = true;
-    console.log("9999: ", itme);
-
-    this.state.audioRecorderPlayer.addPlayBackListener(async (e) => {
-      if (e.current_position === e.duration) {
-        this.state.audioRecorderPlayer.stopPlayer();
-      }
-      var percent = Math.round(
-        (Math.floor(e.current_position) / Math.floor(e.duration)) * 100
-      );
-      this.state.timeElapsed = e.current_position;
-      this.state.percent = percent;
-      this.state.duration = e.duration;
-    });
-  };
 
   onPausePress = async (e) => {
     this.state.isAlreadyPlay = false;

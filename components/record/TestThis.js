@@ -1,302 +1,319 @@
-/* eslint-disable array-callback-return */
-/* eslint-disable react/prop-types */
-import React, { useEffect, useState } from 'react'
-import {
-  View,
-  Text,
-  Button,
-  FlatList,
-  ActivityIndicator
-} from 'react-native'
-import styles, { historyStyles } from '../style/Style.js'
-import * as firebase from 'firebase'
-import { Audio } from 'expo-av'
-import * as Sharing from 'expo-sharing'
-import Slider from '@react-native-community/slider'
-import AudioRecorderPlayer from 'react-native-audio-recorder-player'
-import moment from 'moment'
+import React, { useEffect, useState } from "react";
+import { View, Text, Button, FlatList, ActivityIndicator } from "react-native";
+import styles, { historyStyles } from "../style/Style.js";
+import * as firebase from "firebase";
+import { Audio } from "expo-av";
+import * as Sharing from "expo-sharing";
+import Slider from "@react-native-community/slider";
+import AudioRecorderPlayer from "react-native-audio-recorder-player";
+import moment from "moment";
+import { _DEFAULT_PROGRESS_UPDATE_INTERVAL_MILLIS } from "expo-av/build/AV.js";
 
-export default function History (props) {
-  const childDataId = props.navigation.state.params.childData.id
-  let soundObj = new Audio.Sound()
-  const audioRecorderPlayer = new AudioRecorderPlayer()
-
-  const [index, setIndex] = useState(0)
-  const [isSeeking, setIsSeeking] = useState(false)
-  const [shouldPlayAtEndOfSeek, setShouldPlayAtEndOfSeek] = useState(false)
-  const [playbackInstance, setPlaybackInstance] = useState(null)
-  const [showVideo, setShowVideo] = useState(false)
-  const [muted, setMuted] = useState(false)
-  const [playbackInstancePosition, setPlaybackInstancePosition] = useState(0)
-  const [playbackInstanceDuration, setPlaybackInstanceDuration] = useState(0)
-  const [shouldPlay, setShouldPlay] = useState(false)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isBuffering, setIsBuffering] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [fontLoaded, setFontLoaded] = useState(false)
-  const [shouldCorrectPitch, setShouldCorrectPitch] = useState(true)
-  const [childDataUrl, setChildDataUrl] = useState([])
-  const [dateCreated, setDateCreated] = useState([])
-  const [uri, setUri] = useState(null)
-  const [isAlreadyPlay, setIsAlreadyPlay] = useState(false)
-  const [duration, setDuration] = useState(null)
-  const [timeElapsed, setTimeElapsed] = useState(null)
-  const [percent, setPercent] = useState(0)
-  const [currentTrack, setCurrentTrack] = useState(0)
-  const [inProgress, setInProgress] = useState(false)
-  const [playerStatus, setPlayerStatus] = useState(null)
-  const [audioItems, setAudioItems] = useState([])
-
+export default function History(props) {
+  const childDataId = props.navigation.state.params.childData.id;
+  const soundObj = new Audio.Sound();
+  let currentIndexPlaying = null;
+  const [shouldPlay, setShouldPlay] = useState(false);
+  const [audioItems, setAudioItems] = useState([]);
+  const [positions, setPositions] = useState([]);
+  const [durations, setDurations] = useState([]);
+  const [soundObjList, setSoundObjList] = useState([]);
+  const [playersStatusList, setPlayersStatusList] = useState([]);
+  const [shouldPlaySound, setShouldPlaySound] = useState([]);
+  const [isPlayingSound, setIsPlayingSound] = useState([]);
+  const [shouldPlayAtEndOfSeeks, setshouldPlayAtEndOfSeeks] = useState([]);
+  // const [currentIndexPlaying, setCurrentIndexPlaying] = useState(null);
   useEffect(() => {
     const fetchData = async () => {
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
         playsInSilentModeIOS: true,
         playsInSilentLockedModeIOS: true,
-        // interruptionModeIOS: 0,
         shouldDuckAndroid: true,
         playThroughEarpieceAndroid: false,
-        staysActiveInBackground: true
-      })
-      const audioItem = {
-        url: null,
-        date: null
-      }
-      await firebase
+        staysActiveInBackground: true,
+      });
+      const newAudioItems = [];
+      firebase
         .storage()
         .ref()
-        .child(childDataId + '/')
+        .child(childDataId + "/")
         .listAll()
-        .then((res) => {
-          res.items.map((item) => {
-            item.getDownloadURL().then(url => (audioItem.url = url))
-            item.getMetadata()
-              .then((data) => {
-                const formattedDate = moment(data.timeCreated).utc().format('YYYY-MM-DD')
-                audioItem.date = formattedDate
-              })
-            console.log(audioItem)
-            // setAudioItems([...audioItems, audioItem])
-            // setIsLoading(false)
-          })
-        })
-    }
+        .then(async (res) => {
+          res.items.map(async (item) => {
+            const audioItem = {
+              url: null,
+              date: null,
+            };
+            await item.getDownloadURL().then((url) => (audioItem.url = url));
+            await item.getMetadata().then((data) => {
+              audioItem.date = moment(data.timeCreated)
+                .utc()
+                .format("YYYY-MM-DD");
+            });
+
+            newAudioItems.push(audioItem);
+          });
+          const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+          await sleep(3000);
+          setAudioItems(newAudioItems);
+          loadAudio(newAudioItems);
+        });
+
+      // return newAudioItems;
+    };
 
     fetchData()
-      .catch(e => console.log(e))
-  }, [])
+      .then((res) => {
+        // if (res) {
+        //   setAudioItems(res);
+        // }
+      })
+      .catch((e) => console.log(e));
+    return () => {
+      // if (soundObjList != null) {
+      //   for (let i = 0; i < soundObjList.length; i++) {
+      //     soundObjList[i].unloadAsync();
+      //   }
+      // }
+    };
+  }, []);
 
-  const getSeekSliderPosition = () => {
-    if (
-      soundObj != null &&
-      playbackInstancePosition != null &&
-      playbackInstanceDuration != null
-    ) {
-      return `${playbackInstancePosition} / ${playbackInstanceDuration}`
+  const loadAudio = async (item) => {
+    for (let i = 0; i < item.length; i++) {
+      const ss = new Audio.Sound();
+
+      const source = { uri: item[i].url };
+      const initialStatus = {
+        shouldPlay: false,
+      };
+      try {
+        await ss.loadAsync(
+          source,
+          initialStatus,
+          _DEFAULT_PROGRESS_UPDATE_INTERVAL_MILLIS
+        );
+        // Get Player Status
+        ss.setOnPlaybackStatusUpdate(_onPlaybackStatusUpdate);
+
+        soundObjList.push(ss);
+      } catch (error) {
+        console.log("error:", error);
+      }
     }
-    return 0
-  }
-
-  const onSeekSliderValueChange = () => {
-    if (soundObj != null && !isSeeking) {
-      setIsSeeking(true)
-      setShouldPlayAtEndOfSeek(shouldPlay)
-      soundObj.pauseAsync()
-    }
-  }
-
-  const onSeekSliderSlidingComplete = async (value) => {
-    if (soundObj != null) {
-      setIsSeeking(false)
-      const seekPosition = value * playbackInstanceDuration
-      if (shouldPlayAtEndOfSeek) {
-        soundObj.playFromPositionAsync(seekPosition)
+  };
+  const _onPlaybackStatusUpdate = (playbackStatus) => {
+    if (playbackStatus.isLoaded === true) {
+      if (currentIndexPlaying !== null && !playbackStatus.isAlreadyPlaying) {
+        console.log(
+          "playbackStatus.positionMillis: ",
+          playbackStatus.positionMillis
+        );
+        positions[currentIndexPlaying] = playbackStatus.positionMillis;
+        durations[currentIndexPlaying] = playbackStatus.durationMillis;
+        playersStatusList[currentIndexPlaying] = playbackStatus;
+        // getTimestamp();
       } else {
-        soundObj.setPositionAsync(seekPosition)
-      }
-    }
-  }
-
-  const getTimestamp = () => {
-    if (
-      soundObj != null &&
-      playbackInstancePosition != null &&
-      playbackInstanceDuration != null
-    ) {
-      return `${getMMSSFromMillis(playbackInstancePosition)} / ${getMMSSFromMillis(playbackInstanceDuration)}`
-    }
-    return ''
-  }
-
-  const getMMSSFromMillis = (millis) => {
-    const totalSeconds = millis / 1000
-    const seconds = Math.floor(totalSeconds % 60)
-    const minutes = Math.floor(totalSeconds / 60)
-
-    const padWithZero = (number) => {
-      const string = number.toString()
-      if (number < 10) {
-        return '0' + string
-      }
-      return string
-    }
-    return padWithZero(minutes) + ':' + padWithZero(seconds)
-  }
-
-  const downloadAudio = async (item, index) => {
-    if (soundObj != null) {
-      await soundObj.unloadAsync()
-      soundObj = null
-    }
-    const source = { uri: item.url }
-    const initialStatus = {
-      shouldPlay: true
-    }
-    try {
-      await Audio.Sound.createAsync(
-        source,
-        initialStatus,
-        onPlaybackStatusUpdate
-      )
-
-      // await this.state.soundObj.loadAsync({ uri: item });
-      // this.onPlaybackStatusUpdate;
-      // console.log('url: ', item)
-
-      // Get Player Status
-      const status = await soundObj.getStatusAsync()
-      setPlayerStatus(status)
-      // Play if song is loaded successfully
-      if (playerStatus.isLoaded) {
-        if (playerStatus.isPlaying === false) {
-          const newAudioItems = [...audioItems]
-          newAudioItems[index].position = playerStatus.positionMillis
-          newAudioItems[index].duration = playerStatus.durationMillis
-          setAudioItems(newAudioItems)
-
-          setIsAlreadyPlay(true)
-          setInProgress(true)
-          // setPlaybackInstancePosition(playerStatus.positionMillis)
-          // setPlaybackInstanceDuration(playerStatus.durationMillis)
-          setShouldPlay(playerStatus.shouldPlay)
-          setDuration(playerStatus.durationMillis)
-          soundObj.playAsync(onPlaybackStatusUpdate)
+        playersStatusList.push(playbackStatus);
+        positions.push(playbackStatus.positionMillis);
+        durations.push(playbackStatus.durationMillis);
+        if (playbackStatus.didJustFinish) {
+          // updatePlaybackInstanceForIndex(true);
+        } else {
+          // updatePlaybackInstanceForIndex(false);
+          if (playbackStatus.error) {
+            console.log(`FATAL PLAYER ERROR: ${playbackStatus.error}`);
+          }
         }
       }
-    } catch (error) {
-      console.log('error:', error)
     }
-  }
+  };
 
-  const onPausePress = async () => {
-    setIsAlreadyPlay(false)
-    soundObj.pauseAsync()
-  }
-
-  // const changeTime = async (seconds) => {
-  //   const seektime = (seconds / 100) * duration
-  //   setTimeElapsed(seektime)
-  //   soundObj.setProgressUpdateIntervalAsync(seektime)
-  //   soundObj.setPositionAsync(seektime)
-  // }
+  const updatePlaybackInstanceForIndex = async (playing) => {
+    updateScreenForLoading(playing);
+  };
 
   const updateScreenForLoading = (isLoading) => {
     if (isLoading) {
-      setShowVideo(false)
-      setIsPlaying(false)
-      setPlaybackInstanceDuration(null)
-      setPlaybackInstancePosition(null)
-      setIsLoading(true)
+      isPlayingSound[currentIndexPlaying] = false;
+      durations[currentIndexPlaying] = null;
+      positions[currentIndexPlaying] = null;
+      // setPosition(null);
+      // setIsLoading(true);
     } else {
-      setIsLoading(false)
+      // setIsLoading(false);
     }
-  }
+  };
 
-  const onPlaybackStatusUpdate = (status) => {
-    if (status.isLoaded) {
-      setPlaybackInstancePosition(status.positionMillis)
-      setPlaybackInstanceDuration(status.durationMillis)
-      setShouldPlay(status.shouldPlay)
-      setIsPlaying(status.isPlaying)
-      setIsBuffering(status.isBuffering)
-      if (status.didJustFinish && !status.isLooping) {
-        updatePlaybackInstanceForIndex(true)
-      }
-    } else {
-      if (status.error) {
-        console.log(`FATAL PLAYER ERROR: ${status.error}`)
+  const downloadAudio = async (index) => {
+    currentIndexPlaying = index;
+    // Play if song is loaded successfully
+    if (playersStatusList[index].isLoaded) {
+      if (playersStatusList[index].isPlaying === false) {
+        console.log("999 downloadAudio positions[index]: ", positions[index]);
+
+        positions[index] = playersStatusList[index].positionMillis;
+        await soundObjList[index].replayAsync();
+        soundObjList[index].setOnPlaybackStatusUpdate(_onPlaybackStatusUpdate);
       }
     }
-  }
+  };
+  const _getSeekSliderPosition = () => {
+    console.log(
+      "999 getSeekSliderPosition positions[index]: ",
+      durations[currentIndexPlaying]
+    );
 
-  const updatePlaybackInstanceForIndex = async (playing) => {
-    updateScreenForLoading(true)
-  }
+    if (
+      soundObjList[currentIndexPlaying] != null &&
+      durations[currentIndexPlaying] != null &&
+      positions[currentIndexPlaying] != null
+    ) {
+      return `${positions[currentIndexPlaying]} / ${durations[currentIndexPlaying]}`;
+    }
+    return `0.00 / ${durations[currentIndexPlaying]}`;
+  };
 
-  const Item = ({ item }) => {
+  const _onSeekSliderValueChange = (value) => {
+    console.log("999 onSeekSliderValueChange value: ", value);
+
+    if (soundObjList[currentIndexPlaying] != null) {
+      // setIsSeeking(true);
+      shouldPlayAtEndOfSeeks[currentIndexPlaying] =
+        shouldPlaySound[currentIndexPlaying];
+      console.log("999 onSeekSliderValueChange: ");
+
+      soundObjList[currentIndexPlaying].pauseAsync();
+    }
+  };
+
+  const _onSeekSliderSlidingComplete = async (value) => {
+    console.log(
+      "999 onSeekSliderSlidingComplete seekPosition[index]: ",
+      positions[currentIndexPlaying]
+    );
+
+    if (soundObjList[currentIndexPlaying] != null) {
+      setIsSeeking(false);
+      const seekPosition = value * durations[currentIndexPlaying];
+      console.log("999 seekPosition[index]: ", seekPosition);
+
+      if (shouldPlayAtEndOfSeeks[currentIndexPlaying]) {
+        console.log("999 playFromPositionAsync: ");
+
+        soundObjList[currentIndexPlaying].playFromPositionAsync(seekPosition);
+      } else {
+        console.log("999 setPositionAsync: ");
+
+        soundObjList[currentIndexPlaying].setPositionAsync(seekPosition);
+      }
+    }
+  };
+
+  const getTimestamp = (index) => {
+    console.log(
+      "999 getTimestamp seekPosition[index]: ",
+      positions[currentIndexPlaying]
+    );
+
+    if (
+      soundObjList[index] != null &&
+      durations[index] != null &&
+      positions[index] != null
+    ) {
+      return `${getMMSSFromMillis(positions[index])} / ${getMMSSFromMillis(
+        durations[index]
+      )}`;
+    }
+    return `0.00 / 0.00`;
+  };
+
+  const getMMSSFromMillis = (millis) => {
+    const totalSeconds = millis / 1000;
+    const seconds = Math.floor(totalSeconds % 60);
+    const minutes = Math.floor(totalSeconds / 60);
+
+    const padWithZero = (number) => {
+      const string = number.toString();
+      if (number < 10) {
+        return "0" + string;
+      }
+      return string;
+    };
+    return padWithZero(minutes) + ":" + padWithZero(seconds);
+  };
+
+  const onPressShare = async (index) => {
+    console.log("999 share: ", index);
+    Sharing.shareAsync(soundObjList[index].file);
+    // Sharing.shareAsync(soundObj.file)
+  };
+  const onPressStop = async (index) => {
+    soundObjList[index].stopAsync();
+  };
+
+  const Item = ({ item, index }) => {
     return (
       <View style={historyStyles.listItem}>
         <View style={historyStyles.flexbox_container}>
           <View style={historyStyles.row}>
             <Button
               style={historyStyles.button}
-              onPress={() => downloadAudio(item)} // this.state.soundObject.playAsync()}
+              onPress={() => {
+                downloadAudio(index);
+                // currentIndexPlaying = index;
+                // setCurrentIndexPlaying(index);
+              }}
               title="Play"
             ></Button>
             <Button
               style={historyStyles.button}
-              onPress={() => onPausePress(item)} // this.state.soundObject.playAsync()}
-              title="Pause"
+              onPress={() => onPressStop(index)}
+              title="Stop"
             ></Button>
             <Button
               style={historyStyles.button}
-              onPress={() => Sharing.shareAsync(soundObj.file)}
+              onPress={() => onPressShare(index)}
               title="Share"
             ></Button>
           </View>
           <View>
-            <View>
-              <Slider
-                minimumValue={0}
-                maximumValue={100}
-                trackStyle={historyStyles.track}
-                thumbStyle={historyStyles.thumb}
-                minimumTrackTintColor="#93A8B3"
-                value={getSeekSliderPosition()}
-                onValueChange={onSeekSliderValueChange}
-                onSlidingComplete={onSeekSliderSlidingComplete}
-              />
-            </View>
+            <Slider
+              minimumTrackTintColor="#93A8B3"
+              value={_getSeekSliderPosition()}
+              maximumValue={durations[currentIndexPlaying]}
+              minimumValue={0.0}
+              // value={
+              //   index === currentIndexPlaying
+              //     ? `${positions[currentIndexPlaying]} / ${durations[currentIndexPlaying]}`
+              //     : `0.00 / ${durations[index]}`
+              // }
+              onValueChange={(value) => _onSeekSliderValueChange(value)}
+              onSlidingComplete={_onSeekSliderSlidingComplete}
+            />
+
             <View style={historyStyles.timestampRow}>
-              <Text
-                style={[historyStyles.textLight, styles.timeStamp]}
-                onValueChange={getTimestamp()}
-              >
-                {''}
-                {/* {this.state.isBuffering ? BUFFERING_STRING : ""} */}
+              <Text style={[historyStyles.textLight, historyStyles.timeStamp]}>
+                {item.date}
               </Text>
-              <Text style={[historyStyles.textLight, styles.timeStamp]}>
-                {getTimestamp()}
+              <Text style={[historyStyles.textLight, historyStyles.timeStamp]}>
+                {getTimestamp(index)}
               </Text>
             </View>
           </View>
         </View>
       </View>
-    )
-  }
+    );
+  };
 
-  return isLoading
-    ? (
-      <ActivityIndicator size='large' color={'blue'} style={{ alignSelf: 'center' }}/>
-      )
-    : (
-      <View style={historyStyles.container}>
-        <FlatList
-          style={{ flex: 1 }}
-          data={audioItems}
-          renderItem={({ item, index }) => <Item item={item} index={index} />}
-          keyExtractor={(item) => item.id}
-        />
-      </View>
-      )
+  return (
+    <View style={historyStyles.container}>
+      <FlatList
+        style={{ flex: 1 }}
+        data={audioItems}
+        renderItem={({ item, index }) => <Item item={item} index={index} />}
+        keyExtractor={(item) => item.id}
+      />
+    </View>
+  );
 }

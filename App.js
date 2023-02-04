@@ -7,24 +7,6 @@ import * as firebase from "firebase";
 
 // firebase.initializeApp(config);
 import { initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDE_F88m4Q1mMDldwK1lfbjy9Rs0sFbbSg",
-  authDomain: "speech-recognition-33a7f.firebaseapp.com",
-  projectId: "speech-recognition-33a7f",
-  storageBucket: "speech-recognition-33a7f.appspot.com",
-  messagingSenderId: "900205769137",
-  appId: "1:900205769137:web:c88bd9187b91a905ee4d90",
-  measurementId: "G-SDX7SZX8MW",
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
 // const analytics = getAnalytics(firebase);
 
 import Loading from "./components/startApp/Loading";
@@ -44,7 +26,26 @@ import Profile from "./components/Profiles/Profile";
 import ListOfProfiles from "./components/Profiles/ListOfProfiles";
 import CreateAProfile from "./components/Profiles/CreateAProfile";
 import Recording from "./components/record/Recording";
-import History from "./components/record/TestThis";
+import TestThis from "./components/record/TestThis";
+import History from "./components/record/History";
+// import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDE_F88m4Q1mMDldwK1lfbjy9Rs0sFbbSg",
+  authDomain: "speech-recognition-33a7f.firebaseapp.com",
+  projectId: "speech-recognition-33a7f",
+  storageBucket: "speech-recognition-33a7f.appspot.com",
+  messagingSenderId: "900205769137",
+  appId: "1:900205769137:web:c88bd9187b91a905ee4d90",
+  measurementId: "G-SDX7SZX8MW",
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
 
 const RootStack = createStackNavigator(
   {
@@ -87,9 +88,9 @@ const RootStack = createStackNavigator(
     History: {
       screen: History,
     },
-    // TestThis: {
-    //   screen: TestThis,
-    // },
+    TestThis: {
+      screen: TestThis,
+    },
   },
   {
     initialRouteName: "Loading",

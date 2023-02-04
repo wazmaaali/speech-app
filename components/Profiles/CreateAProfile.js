@@ -18,6 +18,7 @@ import LabelledIcon from "../style/LabelledIcon";
 import { myColors } from "../style/colors";
 
 import * as firebase from "firebase";
+import DatePicker from "react-native-datepicker";
 
 export default class CreateAProfile extends React.Component {
   // var toDoRef = "";
@@ -33,6 +34,7 @@ export default class CreateAProfile extends React.Component {
       lastName: "",
       childId: "",
 
+      date: "09-10-2021",
       dateOfBirth: new Date(),
       today: new Date(),
       dateSelected: false,
@@ -128,9 +130,46 @@ export default class CreateAProfile extends React.Component {
               />
             </View>
 
-            <View style={styles.unselectedBox}>
-              <Text style={styles.name}>Date Of Birth</Text>
-
+            {/* <View style={styles.unselectedBox}>
+              <Text style={styles.name}>Date Of Birth</Text> */}
+            <View style={styless.container}>
+              <Text style={styless.text}>Birth Date :</Text>
+              <DatePicker
+                style={styless.datePickerStyle}
+                date={this.state.date}
+                mode="date"
+                placeholder="select date"
+                format="DD/MM/YYYY"
+                minDate="01-01-1900"
+                maxDate="01-01-2000"
+                confirmBtnText="Confirm"
+                cancelBtnText="Cancel"
+                customStyles={{
+                  dateIcon: {
+                    position: "absolute",
+                    right: -5,
+                    top: 4,
+                    marginLeft: 0,
+                  },
+                  dateInput: {
+                    borderColor: "gray",
+                    alignItems: "flex-start",
+                    borderWidth: 0,
+                    borderBottomWidth: 1,
+                  },
+                  placeholderText: {
+                    fontSize: 17,
+                    color: "gray",
+                  },
+                  dateText: {
+                    fontSize: 17,
+                  },
+                }}
+                onDateChange={(date) => {
+                  this.setState({ date: date });
+                }}
+              />
+              {/* 
               <DateTimePicker
                 style={{
                   backgroundColor: "#88c8e3",
@@ -145,7 +184,7 @@ export default class CreateAProfile extends React.Component {
                 maximumDate={this.state.today}
                 onChange={this.handleConfirm}
                 textColor="black"
-              />
+              /> */}
             </View>
 
             <View>
@@ -274,3 +313,26 @@ export default class CreateAProfile extends React.Component {
     }
   };
 }
+const styless = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#A8E9CA",
+  },
+  title: {
+    textAlign: "left",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  datePickerStyle: {
+    width: 230,
+  },
+  text: {
+    textAlign: "left",
+    width: 230,
+    fontSize: 16,
+    color: "#000",
+  },
+});

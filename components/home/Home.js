@@ -25,7 +25,7 @@ class Home extends React.Component {
   }
 
   showHistory = async () => {
-    this.props.navigation.navigate("History", {
+    this.props.navigation.navigate("TestThis", {
       childData: this.props.navigation.state.params.childData,
     });
   };
@@ -36,6 +36,7 @@ class Home extends React.Component {
       childData: this.props.navigation.state.params.childData,
     });
   };
+
   render() {
     return (
       <View style={styles.containerView}>
