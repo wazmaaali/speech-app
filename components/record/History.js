@@ -1,469 +1,302 @@
-import React, { Component } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Button,
-  Image,
-  FlatList,
-  TouchableOpacity,
-  SafeAreaView,
-  Linking,
-  // Slider,
-} from "react-native";
+import React, { useEffect } from "react";
+import useState from "react-usestateref";
+import * as firebase from "firebase";
 import moment from "moment";
 
-import GetTopNavigation from "../style/TopNavigation";
-import styles from "../style/Style.js";
-import * as firebase from "firebase";
+import {
+  Text,
+  View,
+  ScrollView,
+  StyleSheet,
+  Button,
+  ActivityIndicator,
+} from "react-native";
 import { Audio } from "expo-av";
-import * as Sharing from "expo-sharing";
 import Slider from "@react-native-community/slider";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
-import AudioRecorderPlayer from "react-native-audio-recorder-player";
-import PlayButton from "./PlayButton";
+import styles, { historyStyles } from "../style/Style.js";
 
-import { MaterialIcons } from "@expo/vector-icons";
+export default function History(props) {
+  const childDataId = props.navigation.state.params.childData.id;
 
-class AudioInformation {
-  constructor(uri, date) {
-    this.uri = uri;
-    this.date = date;
-  }
-}
+  const [soundObjList, setSoundObjList, soundObjListRef] = useState([]);
+  const [currentIndex, setCurrentIndex, currentIndexRef] = useState(null);
+  const [dateAudioCreated, setDateAudioCreated] = useState([]);
+  const [shouldPlayAtEndOfSeeks, setShouldPlayAtEndOfSeeks] = useState();
+  const [isSeeking, setIsSeeking] = useState(false);
 
-class History extends React.Component {
-  constructor(props) {
-    super(props);
-    this.index = 0;
-    this.isSeeking = false;
-    this.shouldPlayAtEndOfSeek = false;
-    this.playbackInstance = null;
-    this.state = {
-      showVideo: false,
-      // playbackInstanceName: LOADING_STRING,
-      // loopingType: LOOPING_TYPE_ALL,
-      muted: false,
-      playbackInstancePosition: null,
-      playbackInstanceDuration: null,
-      shouldPlay: false,
-      isPlaying: false,
-      isBuffering: false,
-      isLoading: true,
-      fontLoaded: false,
-      shouldCorrectPitch: true,
-      volume: 1.0,
-      rate: 1.0,
-      // videoWidth: DEVICE_WIDTH,
-      // videoHeight: VIDEO_CONTAINER_HEIGHT,
-      poster: false,
-      useNativeControls: false,
-      fullscreen: false,
-      throughEarpiece: false,
-
-      childDataId: this.props.navigation.state.params.childData.id,
-      childDataUrl: [],
-      dateCreated: [],
-      arrOfTime: [],
-      arrOfUrls: [],
-
-      uri: null,
-      isAlreadyPlay: false,
-      duration: "00:00:00",
-      timeElapsed: "00:00:00",
-      percent: 0,
-      current_track: 0,
-      soundObj: new Audio.Sound(),
-      inprogress: false,
-      playerStatus: null,
-      audioRecorderPlayer: new AudioRecorderPlayer(),
-    };
-  }
-  render() {
-    return (
-      <View style={styless.container}>
-        <FlatList
-          style={{ flex: 1 }}
-          data={this.state.childDataUrl}
-          renderItem={({ item }) => <this.Item item={item} />}
-          keyExtractor={(item, index) => item.id}
-        />
-      </View>
-    );
-  }
-  Item = ({ item }) => {
-    // console.log("ref.getDownloadURL(): ", this.state.arrOfTime);
-
-    console.log("1: ", item);
-    return (
-      <View style={styless.listItem}>
-        <View style={styless.flexbox_container}>
-          <View style={styless.row}>
-            <Button
-              style={styless.button}
-              onPress={() => this.downloadAudio(item)} //this.state.soundObject.playAsync()}
-              title="Play"
-            ></Button>
-            <Button
-              style={styless.button}
-              onPress={() => this.onPausePress(item)} //this.state.soundObject.playAsync()}
-              title="Pause"
-            ></Button>
-            <Button
-              style={styless.button}
-              onPress={() => Sharing.shareAsync(soundObject.file)}
-              title="Share"
-            ></Button>
-          </View>
-          <View>
-            <View>
-              <Slider
-                minimumValue={0}
-                maximumValue={100}
-                trackStyle={styless.track}
-                thumbStyle={styless.thumb}
-                minimumTrackTintColor="#93A8B3"
-                value={this._getSeekSliderPosition()}
-                onValueChange={this._onSeekSliderValueChange}
-                onSlidingComplete={this._onSeekSliderSlidingComplete}
-              />
-            </View>
-            <View style={styless.timestampRow}>
-              <Text
-                style={[styless.textLight, styles.timeStamp]}
-                onValueChange={this._getTimestamp()}
-              >
-                {""}
-                {/* {this.state.isBuffering ? BUFFERING_STRING : ""} */}
-              </Text>
-              <Text style={[styless.textLight, styles.timeStamp]}>
-                {this._getTimestamp()}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
-    );
-  };
-  _getSeekSliderPosition() {
-    // console.log("111 _getSeekSliderPosition vale: ");
-
-    if (
-      this.state.soundObj != null &&
-      this.state.playbackInstancePosition != null &&
-      this.state.playbackInstanceDuration != null
-    ) {
-      return (
-        this.state.playbackInstancePosition /
-        this.state.playbackInstanceDuration
-      );
-    }
-    return 0;
-  }
-  _onSeekSliderValueChange = (value) => {
-    // console.log("111 _onSeekSliderValueChange vale: ", value);
-
-    if (this.state.soundObj != null && !this.isSeeking) {
-      this.isSeeking = true;
-      this.shouldPlayAtEndOfSeek = this.state.shouldPlay;
-      this.state.soundObj.pauseAsync();
-    }
-  };
-  _onSeekSliderSlidingComplete = async (value) => {
-    // console.log("111 _onSeekSliderSlidingComplete vale: ", value);
-
-    if (this.state.soundObj != null) {
-      this.isSeeking = false;
-      const seekPosition = value * this.state.playbackInstanceDuration;
-      if (this.shouldPlayAtEndOfSeek) {
-        this.state.soundObj.playFromPositionAsync(seekPosition);
-      } else {
-        this.state.soundObj.setPositionAsync(seekPosition);
-      }
-    }
-  };
-  _getTimestamp() {
-    // console.log(
-    //   "111 _getTimestamp vale: ",
-    //   this.state.playbackInstancePosition,
-    //   " posi: ",
-    //   this.state.playbackInstanceDuration
-    // );
-
-    if (
-      this.state.soundObj != null &&
-      this.state.playbackInstancePosition != null &&
-      this.state.playbackInstanceDuration != null
-    ) {
-      // console.log(
-      //   "999 call _getMMSSFromMillis:",
-      //   this._getMMSSFromMillis(this.state.playbackInstancePosition)
-      // );
-      return `${this._getMMSSFromMillis(
-        this.state.playbackInstancePosition
-      )} / ${this._getMMSSFromMillis(this.state.playbackInstanceDuration)}`;
-    }
-    return "";
-  }
-  _getMMSSFromMillis(millis) {
-    const totalSeconds = millis / 1000;
-    const seconds = Math.floor(totalSeconds % 60);
-    const minutes = Math.floor(totalSeconds / 60);
-
-    const padWithZero = (number) => {
-      const string = number.toString();
-      if (number < 10) {
-        return "0" + string;
-      }
-      return string;
-    };
-    return padWithZero(minutes) + ":" + padWithZero(seconds);
-  }
-
-  async componentDidMount() {
+  async function initAudio(remoteAudioList) {
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
       playsInSilentModeIOS: true,
       playsInSilentLockedModeIOS: true,
-      // interruptionModeIOS: 0,
       shouldDuckAndroid: true,
       playThroughEarpieceAndroid: false,
       staysActiveInBackground: true,
     });
 
-    // var arrOfTime = [];
-    // var arrOfUrls = [];
-    var id = 0;
-    var formattedDate = "";
-    const imageRefs = await firebase
-      .storage()
-      .ref()
-      .child(this.state.childDataId + "/")
-      .listAll()
-      .then((res) => {
-        const fileNamesArray = res.items.map((i) => i.name);
-        res.items.map(
-          (ref) => console.log("9999: ", ref)
-          // ref.getMetadata(ref).then((metadata) => {
-          //   formattedDate = moment(metadata.timeCreated)
-          //     .utc()
-          //     .format("YYYY-MM-DD");
-
-          // this.setState({
-          //   dateCreated: formattedDate,
-          //   arrOfTime: formattedDate,
-          // });
-          // })
+    await Promise.all(
+      remoteAudioList.map(
+        async (location) => await Audio.Sound.createAsync({ uri: location.url })
+      )
+    ).then((res) => {
+      const currentSoundObjList = [];
+      if (res) {
+        res.map((soundObj) =>
+          currentSoundObjList.push({
+            sound: soundObj.sound,
+            position: 0,
+            duration: soundObj.status.durationMillis,
+            isPlaying: false,
+          })
         );
-
-        // Promise.all(res.items.map((ref) => ref.getDownloadURL())).then(
-        //   (ref) => {
-        //     console.log("1111 9999 urls: ", this.state.arrOfTime);
-        //     // this.state.arrOfUrls.push(ref);
-        //     // this.state.childDataUrl.push({
-        //     //   url: ref,
-        //     // });
-        //     this.setState({
-        //       childDataUrl: ref,
-        //       arrOfUrls: ref,
-        //     });
-        //   }
-        // );
-      });
-
-    // await Promise.all(imageRefs.items.map((ref) => ref.getDownloadURL())).then(
-    //   (ref) => {
-    //     console.log("1111 9999 22233 urls: ", ref);
-    //     this.setState({
-    //       childDataUrl: ref,
-    //     });
-    //   }
-    // );
+        setSoundObjList(currentSoundObjList);
+      }
+    });
   }
-  async downloadAudio(item) {
-    if (this.soundObj != null) {
-      await this.soundObj.unloadAsync();
-      // this.playbackInstance.setOnPlaybackStatusUpdate(null);
-      this.soundObj = null;
-    }
-    const source = { uri: item };
-    const initialStatus = {
-      shouldPlay: true,
-      rate: this.state.rate,
-      shouldCorrectPitch: this.state.shouldCorrectPitch,
-      volume: this.state.volume,
-      isMuted: this.state.muted,
-      // // UNCOMMENT THIS TO TEST THE OLD androidImplementation:
-      // androidImplementation: 'MediaPlayer',
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const newAudioItems = [];
+      firebase
+        .storage()
+        .ref()
+        .child(childDataId + "/")
+        .listAll()
+        .then(async (res) => {
+          res.items.map(async (item) => {
+            const audioItem = {
+              url: null,
+              date: null,
+            };
+            await item.getDownloadURL().then((url) => (audioItem.url = url));
+            await item.getMetadata().then((data) => {
+              audioItem.date = moment(data.timeCreated)
+                .utc()
+                .format("YYYY-MM-DD");
+            });
+            newAudioItems.push(audioItem);
+            dateAudioCreated.push(audioItem.date);
+          });
+          const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+          await sleep(3000);
+          initAudio(newAudioItems);
+        });
     };
-    try {
-      await Audio.Sound.createAsync(
-        source,
-        initialStatus,
-        this._onPlaybackStatusUpdate
-      );
+    fetchData()
+      .then((res) => {
+        // if (res) {
+        //   setAudioItems(res);
+        // }
+      })
+      .catch((e) => console.log(e));
+  }, []);
 
-      // await this.state.soundObj.loadAsync({ uri: item });
-      // this._onPlaybackStatusUpdate;
-      console.log("url: ", item);
-
-      // Get Player Status
-      this.state.playerStatus = await this.state.soundObj.getStatusAsync();
-      // Play if song is loaded successfully
-      if (this.state.playerStatus.isLoaded) {
-        if (this.state.playerStatus.isPlaying === false) {
-          this.state.isAlreadyPlay = true;
-          this.state.inprogress = true;
-
-          this.state.playbackInstancePosition =
-            this.state.playerStatus.positionMillis;
-          this.state.playbackInstanceDuration =
-            this.state.playerStatus.durationMillis;
-
-          this.state.shouldPlay = this.state.playerStatus.shouldPlay;
-
-          this.state.duration = this.state.playerStatus.durationMillis;
-
-          this.state.soundObj.playAsync(this._onPlaybackStatusUpdate);
-        }
+  // Check if any sound is playing and return the sound object and its index or null
+  async function isSoundPlaying() {
+    let soundPlaying = null;
+    const newSoundObjList = [...soundObjListRef.current];
+    newSoundObjList.map((item, index) => {
+      if (item.isPlaying) {
+        soundPlaying = { sound: item.sound, index: index };
       }
-    } catch (error) {
-      console.log("error:", error);
+    });
+    return soundPlaying;
+  }
+
+  function changeSoundPlayingStatus(index) {
+    const newSoundObjList = [...soundObjListRef.current];
+    newSoundObjList[index].isPlaying = false;
+    setSoundObjList(newSoundObjList);
+  }
+
+  // Checks if any sound is playing and pauses it before playing the new sound
+  async function playSound(sound) {
+    await isSoundPlaying().then(async (soundPlaying) => {
+      if (soundPlaying) {
+        changeSoundPlayingStatus(soundPlaying.index);
+        await pauseSound(soundPlaying.sound).then(async () => {
+          await sound
+            .playAsync()
+            .then(() => sound.setOnPlaybackStatusUpdate(statusUpdate));
+        });
+      } else {
+        await sound
+          .playAsync()
+          .then(() => sound.setOnPlaybackStatusUpdate(statusUpdate));
+      }
+    });
+  }
+
+  async function replaySound(sound) {
+    await isSoundPlaying().then(async (soundPlaying) => {
+      if (soundPlaying) {
+        changeSoundPlayingStatus(soundPlaying.index);
+        await pauseSound(soundPlaying.sound).then(async () => {
+          await sound
+            .replayAsync()
+            .then(() => sound.setOnPlaybackStatusUpdate(statusUpdate));
+        });
+      } else {
+        await sound
+          .replayAsync()
+          .then(() => sound.setOnPlaybackStatusUpdate(statusUpdate));
+      }
+    });
+  }
+
+  async function pauseSound(sound) {
+    await sound.pauseAsync().then(() => {
+      sound.setOnPlaybackStatusUpdate(statusUpdate);
+    });
+  }
+
+  function statusUpdate(playbackStatus) {
+    const newSoundObjList = [...soundObjListRef.current];
+    if (newSoundObjList[currentIndexRef.current]) {
+      newSoundObjList[currentIndexRef.current].position =
+        playbackStatus.positionMillis;
+      newSoundObjList[currentIndexRef.current].isPlaying =
+        playbackStatus.isPlaying;
+      setSoundObjList(newSoundObjList);
     }
   }
 
-  onPausePress = async (e) => {
-    this.state.isAlreadyPlay = false;
-    this.state.soundObj.pauseAsync();
-  };
-
-  changeTime = async (seconds) => {
-    // 50 / duration
-    console.log("999 this.state.duration: ", this.state.duration);
-    var seektime = (seconds / 100) * this.state.duration;
-    this.state.timeElapsed = seektime;
-    console.log("999 this.state.duration: ", this.state.timeElapsed);
-    // this.state.percent = seektime;
-    this.state.soundObj.setProgressUpdateIntervalAsync(seektime);
-    this.state.soundObj.setPositionAsync(seektime);
-  };
-
-  _updateScreenForLoading(isLoading) {
-    if (isLoading) {
-      this.setState({
-        showVideo: false,
-        isPlaying: false,
-        // playbackInstanceName: LOADING_STRING,
-        playbackInstanceDuration: null,
-        playbackInstancePosition: null,
-        isLoading: true,
-      });
-    } else {
-      this.setState({
-        // playbackInstanceName: PLAYLIST[this.index].name,
-        // showVideo: PLAYLIST[this.index].isVideo,
-        isLoading: false,
-      });
-    }
+  function convertMilliSeconds(ms) {
+    var min = Math.floor((ms / (1000 * 60)) % 60);
+    var sec = Math.floor((ms / 1000) % 60);
+    return min + ":" + sec;
   }
-
-  _onPlaybackStatusUpdate = (status) => {
-    console.log("FATAL PLAYER ERROR: ", status);
-
-    if (status.isLoaded) {
-      this.setState({
-        playbackInstancePosition: status.positionMillis,
-        playbackInstanceDuration: status.durationMillis,
-        shouldPlay: status.shouldPlay,
-        isPlaying: status.isPlaying,
-        isBuffering: status.isBuffering,
-        rate: status.rate,
-        muted: status.isMuted,
-        volume: status.volume,
-        // loopingType: status.isLooping ? LOOPING_TYPE_ONE : LOOPING_TYPE_ALL,
-        shouldCorrectPitch: status.shouldCorrectPitch,
-      });
-      if (status.didJustFinish && !status.isLooping) {
-        // this._advanceIndex(true);
-        this._updatePlaybackInstanceForIndex(true);
-      }
-    } else {
-      if (status.error) {
-        console.log(`FATAL PLAYER ERROR: ${status.error}`);
-      }
+  const _onSeekSliderValueChange = (value) => {
+    const newSoundObjList = [...soundObjListRef.current];
+    if (newSoundObjList[currentIndexRef.current] && !setIsSeeking) {
+      setIsSeeking(true);
+      const newPosition =
+        value * newSoundObjList[currentIndexRef.current].duration;
+      newSoundObjList[currentIndexRef.current].position = newPosition;
+      setSoundObjList(newSoundObjList);
     }
   };
 
-  async _updatePlaybackInstanceForIndex(playing) {
-    this._updateScreenForLoading(true);
+  const _onSeekSliderSlidingComplete = async (value) => {
+    const newSoundObjList = [...soundObjListRef.current];
+    if (newSoundObjList[currentIndexRef.current]) {
+      const newPosition =
+        value * newSoundObjList[currentIndexRef.current].duration;
+      newSoundObjList[currentIndexRef.current].position = newPosition;
+      setSoundObjList(newSoundObjList);
+      setIsSeeking(false);
+      setShouldPlayAtEndOfSeeks(true);
+    }
+  };
+  function AudioPlayerComponent(props) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "column",
+          justifyContent: "space-between",
+          margin: 5,
+        }}
+      >
+        <View
+          style={{
+            flex: 0.5,
+            alignSelf: "stretch",
+            justifyContent: "flex-end",
+          }}
+        >
+          {props.isPlaying ? (
+            <Button
+              title="Pause Sound"
+              onPress={() => {
+                setCurrentIndex(props.index);
+                pauseSound(props.sound);
+              }}
+            />
+          ) : props.position == props.duration && props.position > 0 ? (
+            <Button
+              title="Replay Sound"
+              onPress={() => {
+                setCurrentIndex(props.index);
+                replaySound(props.sound);
+              }}
+            />
+          ) : (
+            <Button
+              title="Play Sound"
+              onPress={() => {
+                setCurrentIndex(props.index);
+                playSound(props.sound);
+              }}
+            />
+          )}
+        </View>
+        <View
+          style={{
+            flex: 0.5,
+            alignSelf: "stretch",
+          }}
+        >
+          <Slider
+            // disabled={true}
+            value={props.position}
+            minimumValue={0}
+            maximumValue={props.duration}
+            minimumTrackTintColor="#537FE7"
+            maximumTrackTintColor="#E9F8F9"
+            // onValueChange={_onSeekSliderValueChange}
+            // onSlidingComplete={_onSeekSliderSlidingComplete}
+          />
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <Text style={{ fontSize: 11, fontWeigh: "500", color: "#B6B7BF" }}>
+              {convertMilliSeconds(props.position)}/
+              {convertMilliSeconds(props.duration)}
+            </Text>
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeigh: "500",
+                color: "#B6B7BF",
+              }}
+            >
+              {dateAudioCreated[props.index]}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
   }
+
+  return (
+    <ScrollView>
+      <View style={styless.container}>
+        {soundObjListRef.current.length != 0 ? (
+          soundObjListRef.current.map((item, index) => (
+            <AudioPlayerComponent
+              key={index}
+              index={index}
+              sound={item.sound}
+              isPlaying={item.isPlaying}
+              position={item.position}
+              duration={item.duration}
+            />
+          ))
+        ) : (
+          <ActivityIndicator size={"large"} color={"#537FE7"} />
+        )}
+      </View>
+    </ScrollView>
+  );
 }
+
 const styless = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#EAEAEC",
-  },
-  textLight: {
-    color: "#B6B7BF",
-  },
-  text: {
-    color: "#8E97A6",
-  },
-  titleContainer: { alignItems: "center", marginTop: 24 },
-  textDark: {
-    color: "#3D425C",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 16,
-  },
-  coverContainer: {
-    marginTop: 32,
-    width: 250,
-    height: 250,
-    shadowColor: "#5D3F6A",
-    shadowOffset: { height: 15 },
-    shadowRadius: 8,
-    shadowOpacity: 0.3,
-  },
-  cover: {
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-  },
-  track: {
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: "#FFF",
-  },
-  thumb: {
-    width: 8,
-    height: 8,
-    backgroundColor: "#3D425C",
-  },
-  timeStamp: {
-    fontSize: 11,
-    fontWeight: "500",
-  },
-  seekbar: { margin: 32 },
-  inprogress: {
-    marginTop: -12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  timestampRow: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    alignSelf: "stretch",
+    backgroundColor: "#FFFFFF",
   },
 });
-export default History;

@@ -25,7 +25,7 @@ class Home extends React.Component {
   }
 
   showHistory = async () => {
-    this.props.navigation.navigate("TestThis", {
+    this.props.navigation.navigate("History", {
       childData: this.props.navigation.state.params.childData,
     });
   };

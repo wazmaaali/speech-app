@@ -130,9 +130,9 @@ export default class CreateAProfile extends React.Component {
               />
             </View>
 
-            {/* <View style={styles.unselectedBox}>
-              <Text style={styles.name}>Date Of Birth</Text> */}
-            <View style={styless.container}>
+            <View style={styles.unselectedBox}>
+              <Text style={styles.name}>Date Of Birth</Text>
+              {/* <View style={styless.container}>
               <Text style={styless.text}>Birth Date :</Text>
               <DatePicker
                 style={styless.datePickerStyle}
@@ -168,8 +168,8 @@ export default class CreateAProfile extends React.Component {
                 onDateChange={(date) => {
                   this.setState({ date: date });
                 }}
-              />
-              {/* 
+              /> */}
+
               <DateTimePicker
                 style={{
                   backgroundColor: "#88c8e3",
@@ -182,9 +182,11 @@ export default class CreateAProfile extends React.Component {
                 display="spinner"
                 value={this.state.dateOfBirth}
                 maximumDate={this.state.today}
-                onChange={this.handleConfirm}
+                onChange={(event, value) => {
+                  this.state.dateOfBirth = value;
+                }}
                 textColor="black"
-              /> */}
+              />
             </View>
 
             <View>
